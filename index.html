@@ -1054,13 +1054,66 @@ function vWorld(){
   const sub=ui.wsub||'map';
   return `<div class="col" style="gap:12px">${eventBanner()}${seg([['map','Map'],['acads','Academies'],['prospects','Prospects'],['schols','Scholarships'],['rank','Owners'],['market','Business'],['news','News']],sub,'wsub')}${sub==='map'?vWMap():sub==='acads'?vWAcads():sub==='prospects'?vWProspects():sub==='schols'?vWSchols():sub==='rank'?vWRank():sub==='market'?vWMarket():vWNews()}</div>`;
 }
+// World map landmasses: hand-simplified, APPROXIMATE outlines (not cartographic data).
+// Drawn in the 1000x520 map canvas with a custom layout fitted to the WCOUNTRIES pins (x/y %).
+// Points are "x,y" pixels; smoothed into soft coastlines with a closed Catmull-Rom spline.
+const WLAND=[
+ // North America (Alaska, Canada, USA, Mexico, Central America)
+ '75,125 100,100 150,86 205,78 255,84 296,98 322,120 304,136 292,150 314,158 334,150 330,174 302,192 290,210 276,226 268,240 255,232 240,236 216,240 202,252 206,268 230,266 236,274 232,288 256,298 264,306 244,308 222,300 196,286 168,268 142,244 124,222 114,202 108,180 98,158 84,142',
+ // Cuba, Greenland, Iceland
+ '248,264 270,258 290,266 270,272',
+ '338,38 380,26 428,34 440,58 416,84 388,96 360,86 342,64',
+ '392,110 408,104 420,114 404,124',
+ // South America
+ '258,306 274,294 302,290 336,296 366,306 384,322 412,334 424,352 410,366 392,384 368,398 360,412 350,428 340,448 328,472 312,494 300,502 292,486 289,458 285,432 279,408 272,384 262,360 253,336 251,318',
+ // Africa
+ '448,240 470,236 500,238 520,230 536,242 560,246 580,256 604,250 626,248 638,262 646,284 656,300 664,314 650,330 640,350 632,382 620,420 606,452 588,470 570,480 552,470 544,440 538,402 536,370 541,346 520,340 496,336 472,342 452,334 432,320 412,304 410,288 418,272 430,258 440,246',
+ // Madagascar
+ '646,400 658,392 664,418 654,442 642,424',
+ // Eurasia
+ '410,214 412,202 422,196 444,196 462,198 468,190 466,176 456,172 462,160 474,154 486,146 490,134 494,120 496,106 504,102 514,106 516,120 514,128 530,126 546,128 562,126 576,118 590,104 606,96 626,80 656,64 700,54 760,50 820,56 868,68 902,90 908,118 900,140 890,160 872,162 852,160 836,170 830,186 832,200 834,210 830,224 826,238 816,232 810,222 804,212 798,200 788,196 782,206 790,218 800,230 796,248 792,262 784,278 772,288 774,304 780,322 776,338 766,352 760,368 752,352 752,334 756,318 756,304 748,296 742,308 744,330 748,350 742,372 736,388 724,374 710,348 704,322 702,302 700,286 712,276 700,268 694,278 690,290 676,298 664,294 658,280 652,262 644,248 640,236 630,228 616,226 598,226 584,228 576,236 566,240 558,246 552,236 554,218 548,206 538,192 526,176 520,182 528,194 540,212 548,226 538,228 532,238 524,248 516,238 512,224 504,212 496,202 486,204 476,208 470,216 472,228 462,236 446,234 432,230 420,230 412,226',
+ // Scandinavia
+ '506,92 514,72 534,54 560,42 592,34 622,40 620,56 600,70 594,88 586,100 574,108 562,104 552,98 536,98 524,104',
+ // Great Britain, Ireland
+ '436,164 450,160 458,148 462,136 454,122 448,110 440,104 434,114 438,128 430,140 424,152',
+ '406,128 418,124 422,138 410,144 402,138',
+ // Japan (arc), Taiwan, Philippines
+ '866,170 876,178 868,196 856,214 842,226 828,232 826,224 840,212 852,198 858,184',
+ '808,258 814,254 814,270 808,270',
+ '820,296 828,290 832,314 824,322',
+ // Sri Lanka, Sumatra, Borneo, Java, New Guinea
+ '742,396 750,394 750,406 742,408',
+ '752,374 770,382 790,396 784,404 764,394',
+ '800,360 822,356 832,372 818,388 800,378',
+ '782,404 810,406 806,413 782,413',
+ '850,362 890,360 906,378 872,376',
+ // Australia, Tasmania, New Zealand
+ '808,398 828,382 856,376 884,386 912,380 926,404 928,430 910,452 884,462 860,452 834,456 812,440 806,418',
+ '880,474 896,472 892,486 880,484',
+ '952,450 962,444 964,462 954,472'
+];
+let _wlandD='';
+function wLandD(){
+  if(_wlandD)return _wlandD;
+  const f=n=>+n.toFixed(1);
+  _wlandD=WLAND.map(s=>{
+    const q=s.split(' ').map(p=>p.split(',').map(Number)),n=q.length;
+    let d='M'+q[0][0]+' '+q[0][1];
+    for(let i=0;i<n;i++){
+      const a=q[(i-1+n)%n],b=q[i],c=q[(i+1)%n],e=q[(i+2)%n];
+      d+='C'+f(b[0]+(c[0]-a[0])/6)+' '+f(b[1]+(c[1]-a[1])/6)+','+f(c[0]-(e[0]-b[0])/6)+' '+f(c[1]-(e[1]-b[1])/6)+','+c[0]+' '+c[1];
+    }
+    return d+'Z';
+  }).join('');
+  return _wlandD;
+}
 function vWMap(){
   const acads=Object.values(S.acads||{}),pros=allAcademyProspects(),rank=ownerRank();
   const pins=WCOUNTRIES.map(w=>{const a=S.acads[w.id];return `<button class="wpin${a?' on':''}" style="left:${w.x}%;top:${w.y}%" data-a="wcountry" data-cid="${w.id}" title="${esc(w.n)}${a?' · academy':''}" aria-label="${esc(w.n)}"><span>${w.f}</span><b>${w.id}</b></button>`}).join('');
   const latest=(S.worldNews||[]).slice(0,3).map(n=>`<div class="newsitem"><span class="pill ${n.type==='Business'?'b':n.type==='Academies'?'g':n.type==='Shareholders'?'y':''}">${esc(n.type||'World')}</span><div class="grow"><div class="ell">${esc(n.t)}</div><div class="note">Season ${n.s} · MD ${n.w+1}</div></div></div>`).join('');
   return `<div class="wstats"><div class="stat"><b>${acads.length}</b><span>Academies</span></div><div class="stat"><b>${pros.length}</b><span>Prospects</span></div><div class="stat"><b>#${rank}</b><span>Owner rank</span></div><div class="stat"><b class="gold">${money(playerOwnerNet())}</b><span>Group value</span></div></div>
   <div class="card wmapcard"><div class="row" style="align-items:flex-start"><div class="grow"><div class="h2">Interactive world map</div><div class="note">Tap a country to scout its academies and build your network.</div></div><span class="pill">${acads.length} active</span></div>
-   <div class="wmap"><svg class="wsvg" viewBox="0 0 1000 520" aria-hidden="true"><defs><linearGradient id="wbg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#07131f"/><stop offset=".55" stop-color="#0b1f31"/><stop offset="1" stop-color="#0a1827"/></linearGradient><radialGradient id="wglow" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="#2fd27e" stop-opacity=".14"/><stop offset="1" stop-color="#2fd27e" stop-opacity="0"/></radialGradient></defs><rect width="1000" height="520" fill="url(#wbg)"/><ellipse cx="520" cy="270" rx="450" ry="240" fill="url(#wglow)"/><g fill="#153b56" stroke="#2b6485" stroke-width="1.2" opacity=".85"><path d="M90 150C140 100 220 90 300 120c30 20 20 60-20 80-30 20-60 50-90 60-30 10-60-10-80-40-20-25-35-50-20-70Z"/><path d="M188 255c22 10 30 32 16 45-14-10-29-20-16-45Z"/><path d="M268 300c40-12 77 8 82 50 5 40-20 100-50 120-20-15-30-50-25-80-15-30-25-65-7-90Z"/><path d="M460 200c30-30 80-25 110-5 30 15 40 40 15 55-25 15-65 10-85-5-20-10-50-20-40-45Z"/><path d="M455 275c40-20 100-10 130 25 25 30 15 90-10 130-25 35-55 25-75-10-20-35-30-70-40-105Z"/><path d="M600 190c50-35 140-35 220-5 60 25 90 60 60 95-30 30-80 35-120 20-40-10-80 0-110-15-25-15-60-50-50-95Z"/><path d="M700 300c20 20 25 60 10 90-10-30-20-60-10-90Z"/><path d="M760 315c18-8 35 5 32 22-3 18-18 32-32 28-12-8-12-40 0-50Z"/><path d="M800 390c40-15 90 0 100 30 5 30-30 45-60 35-30-10-50-35-40-65Z"/><path d="M875 245c12-10 25 5 22 20-3 14-18 20-28 12-8-10-4-24 6-32Z"/></g><g stroke="#3b7c9e" stroke-width="1" opacity=".13" stroke-dasharray="2 9">${Array.from({length:9},(_,i)=>`<path d="M0 ${58+i*52}h1000"/>`).join('')}${Array.from({length:12},(_,i)=>`<path d="M${80+i*78} 0v520"/>`).join('')}</g><g fill="#2fd27e" opacity=".35">${Array.from({length:36},(_,i)=>`<circle cx="${120+((i*137)%760)}" cy="${90+((i*83)%350)}" r="1.2"/>`).join('')}</g></svg>${pins}</div>
+   <div class="wmap"><svg class="wsvg" viewBox="0 0 1000 520" aria-hidden="true"><defs><linearGradient id="wbg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#07131f"/><stop offset=".55" stop-color="#0b1f31"/><stop offset="1" stop-color="#0a1827"/></linearGradient><linearGradient id="wland" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b7396"/><stop offset="1" stop-color="#175070"/></linearGradient><pattern id="wdots" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="4.5" cy="4.5" r="1" fill="#7fd0f0" opacity=".16"/></pattern><radialGradient id="wacad"><stop offset="0" stop-color="#2fd27e" stop-opacity=".34"/><stop offset="1" stop-color="#2fd27e" stop-opacity="0"/></radialGradient><radialGradient id="wglow" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="#2fd27e" stop-opacity=".14"/><stop offset="1" stop-color="#2fd27e" stop-opacity="0"/></radialGradient></defs><rect width="1000" height="520" fill="url(#wbg)"/><ellipse cx="520" cy="270" rx="450" ry="240" fill="url(#wglow)"/><path d="${wLandD()}" fill="none" stroke="#3fb6e0" stroke-width="7" stroke-linejoin="round" opacity=".1"/><path d="${wLandD()}" fill="url(#wland)" stroke="#4aa6cc" stroke-width="1.1" stroke-linejoin="round"/><path d="${wLandD()}" fill="url(#wdots)"/>${acads.map(a=>{const w=WCOUNTRY(a.id);return w?`<circle cx="${w.x*10}" cy="${w.y*5.2}" r="34" fill="url(#wacad)"/>`:''}).join('')}<g stroke="#3b7c9e" stroke-width="1" opacity=".13" stroke-dasharray="2 9">${Array.from({length:9},(_,i)=>`<path d="M0 ${58+i*52}h1000"/>`).join('')}${Array.from({length:12},(_,i)=>`<path d="M${80+i*78} 0v520"/>`).join('')}</g><g fill="#2fd27e" opacity=".35">${Array.from({length:36},(_,i)=>`<circle cx="${120+((i*137)%760)}" cy="${90+((i*83)%350)}" r="1.2"/>`).join('')}</g></svg>${pins}</div>
    <div class="wlegend"><span><i class="wdot on"></i>Academy</span><span><i class="wdot"></i>Available</span><span class="grow"></span><span>${WCOUNTRIES.length} countries</span></div>
    <div class="chips" style="margin-top:10px">${WCOUNTRIES.map(w=>`<button class="chip ${S.acads[w.id]?'on':''}" data-a="wcountry" data-cid="${w.id}">${w.f} ${esc(w.n)}</button>`).join('')}</div></div>
   <div class="grid2"><button class="btn pri" data-a="wsub" data-v="acads">My academies</button><button class="btn" data-a="wsub" data-v="prospects">Prospects</button></div>
