@@ -1051,8 +1051,8 @@ function eventBanner(){
   return `<button class="eventbanner" data-a="evopen" data-i="0"><span class="ebdot">!</span><div class="grow" style="min-width:0"><div class="disp ell" style="font-size:17px;font-weight:700;text-transform:uppercase">${esc(e.title)}</div><div class="note">A decision is waiting · ${S.events.length>1?`${S.events.length} decisions pending`:'Review the options'}</div></div><span class="pill y">Decision</span></button>`;
 }
 function vWorld(){
-  const sub=ui.wsub||'map';
-  return `<div class="col" style="gap:12px">${eventBanner()}${seg([['map','Map'],['acads','Academies'],['prospects','Prospects'],['schols','Scholarships'],['rank','Owners'],['market','Business'],['news','News']],sub,'wsub')}${sub==='map'?vWMap():sub==='acads'?vWAcads():sub==='prospects'?vWProspects():sub==='schols'?vWSchols():sub==='rank'?vWRank():sub==='market'?vWMarket():vWNews()}</div>`;
+  const sub=['map','talent','market','rank'].includes(ui.wsub)?ui.wsub:'map';
+  return `<div class="col" style="gap:12px">${eventBanner()}${seg([['map','Map'],['talent','Talent'],['market','Business'],['rank','Owners']],sub,'wsub')}${sub==='map'?vWMap():sub==='talent'?vWTalent():sub==='rank'?vWRank():vWMarket()}</div>`;
 }
 // World map landmasses: hand-simplified, APPROXIMATE outlines (not cartographic data).
 // Drawn in the 1000x520 map canvas with a custom layout fitted to the WCOUNTRIES pins (x/y %).
@@ -1116,12 +1116,11 @@ function vWMap(){
    <div class="wmap"><svg class="wsvg" viewBox="0 0 1000 520" aria-hidden="true"><defs><linearGradient id="wbg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#07131f"/><stop offset=".55" stop-color="#0b1f31"/><stop offset="1" stop-color="#0a1827"/></linearGradient><linearGradient id="wland" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b7396"/><stop offset="1" stop-color="#175070"/></linearGradient><pattern id="wdots" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="4.5" cy="4.5" r="1" fill="#7fd0f0" opacity=".16"/></pattern><radialGradient id="wacad"><stop offset="0" stop-color="#2fd27e" stop-opacity=".34"/><stop offset="1" stop-color="#2fd27e" stop-opacity="0"/></radialGradient><radialGradient id="wglow" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="#2fd27e" stop-opacity=".14"/><stop offset="1" stop-color="#2fd27e" stop-opacity="0"/></radialGradient></defs><rect width="1000" height="520" fill="url(#wbg)"/><ellipse cx="520" cy="270" rx="450" ry="240" fill="url(#wglow)"/><path d="${wLandD()}" fill="none" stroke="#3fb6e0" stroke-width="7" stroke-linejoin="round" opacity=".1"/><path d="${wLandD()}" fill="url(#wland)" stroke="#4aa6cc" stroke-width="1.1" stroke-linejoin="round"/><path d="${wLandD()}" fill="url(#wdots)"/>${acads.map(a=>{const w=WCOUNTRY(a.id);return w?`<circle cx="${w.x*10}" cy="${w.y*5.2}" r="34" fill="url(#wacad)"/>`:''}).join('')}<g stroke="#3b7c9e" stroke-width="1" opacity=".13" stroke-dasharray="2 9">${Array.from({length:9},(_,i)=>`<path d="M0 ${58+i*52}h1000"/>`).join('')}${Array.from({length:12},(_,i)=>`<path d="M${80+i*78} 0v520"/>`).join('')}</g><g fill="#2fd27e" opacity=".35">${Array.from({length:36},(_,i)=>`<circle cx="${120+((i*137)%760)}" cy="${90+((i*83)%350)}" r="1.2"/>`).join('')}</g></svg>${pins}</div>
    <div class="wlegend"><span><i class="wdot on"></i>Academy</span><span><i class="wdot"></i>Available</span><span class="grow"></span><span>${WCOUNTRIES.length} countries</span></div>
    <div class="chips" style="margin-top:10px">${WCOUNTRIES.map(w=>`<button class="chip ${S.acads[w.id]?'on':''}" data-a="wcountry" data-cid="${w.id}">${w.f} ${esc(w.n)}</button>`).join('')}</div></div>
-  <div class="grid2"><button class="btn pri" data-a="wsub" data-v="acads">My academies</button><button class="btn" data-a="wsub" data-v="prospects">Prospects</button></div>
-  <div class="card flat"><div class="lh"><span class="grow">World news</span><button class="btn sm" data-a="wsub" data-v="news">View all</button></div>${latest||'<div class="note" style="padding:12px">The world is quiet.</div>'}</div>`;
+  <div class="card flat"><div class="lh"><span class="grow">World news</span><button class="btn sm" data-a="wnewsopen">View all</button></div>${latest||'<div class="note" style="padding:12px">The world is quiet.</div>'}</div>`;
 }
 function vWAcads(){
   const acads=Object.values(S.acads||{}).sort((a,b)=>acadLevel(b)-acadLevel(a));
-  return `<div class="card"><div class="row"><div class="grow"><div class="h2">International academies</div><div class="note">Build and upgrade your network, then develop prospects into first-team players.</div></div><span class="pill">${acads.length}</span></div><div class="grid2" style="margin-top:8px"><button class="btn pri" data-a="wsub" data-v="map">Build on map</button><button class="btn" data-a="wsub" data-v="prospects">All prospects</button></div></div>
+  return `<div class="card"><div class="row"><div class="grow"><div class="h2">International academies</div><div class="note">Build and upgrade your network, then develop prospects into first-team players.</div></div><span class="pill">${acads.length}</span></div><div class="grid2" style="margin-top:8px"><button class="btn pri" data-a="wsub" data-v="map">Build on map</button><button class="btn" data-a="wtal" data-v="prospects">All prospects</button></div></div>
   ${acads.length?acads.map(a=>{const W=WCOUNTRY(a.id),n=(a.prospects||[]).length;return `<div class="card wacad"><div class="row"><span class="wflag">${W.f}</span><div class="grow" style="min-width:0"><div class="row"><b class="disp" style="font-size:19px;text-transform:uppercase">${esc(W.n)}</b><span class="pill">Lv ${acadLevel(a)}</span></div><div class="note">${esc(W.reg)} · ${W.style} · ${n}/${acadCap(a)} prospects · since S${a.built||1}</div></div><div class="tr"><b class="gold">${money(acadAnnual(a))}</b><span class="note">per year</span></div></div><div class="grid3" style="margin-top:8px"><div class="stat"><b>${n}</b><span>Prospects</span></div><div class="stat"><b class="green">${money(academyIncome(a))}</b><span>Income / yr</span></div><div class="stat"><b>${money(acadAnnual(a))}</b><span>Cost / yr</span></div></div><div class="note" style="margin-top:6px">Asset value ${money(acadValue(a))} · capacity ${acadCap(a)}</div><div class="grid2" style="margin-top:8px"><button class="btn sm" data-a="wacadOpen" data-cid="${a.id}">Manage</button><button class="btn sm pri" data-a="wacadProspects" data-cid="${a.id}">Prospects</button></div></div>`}).join(''):'<div class="card"><div class="note">No academies yet. Open the world map and build your first academy.</div><button class="btn pri blk" style="margin-top:8px" data-a="wsub" data-v="map">Explore the map</button></div>'}`;
 }
 function vWProspects(){
@@ -1129,17 +1128,19 @@ function vWProspects(){
   let ps=allAcademyProspects();
   if(pos!=='ALL')ps=ps.filter(p=>p.pos===pos);
   if(acadF!=='ALL')ps=ps.filter(p=>p.prospect===acadF);
+  if(ui.welig)ps=ps.filter(p=>p.age>=16&&!schWait(p));
   ps.sort((a,b)=>b.pot-a.pot||a.age-b.age);
   const chips=[['ALL','All'],['GK','GK'],['DF','DF'],['MF','MF'],['FW','FW']];
-  return `<div class="card"><div class="h2">Academy prospects</div><div class="note">Potential is shown on the right. Prospects must be 16 or older to receive an international scholarship.</div><div class="chips" style="margin-top:8px">${chips.map(([k,l])=>`<button class="chip ${pos===k?'on':''}" data-a="wpos" data-v="${k}">${l}</button>`).join('')}${acadF!=='ALL'?`<button class="chip on" data-a="wacadFilter" data-v="ALL">${esc(WCOUNTRY(acadF).n)} ×</button>`:''}</div></div>
-  <div class="card flat">${ps.length?ps.map(p=>{const W=WCOUNTRY(p.prospect);const pc=Math.round((p.ovr-25)/(Math.max(1,p.pot-25))*100);return `<button class="prow q-${p.pos}" data-a="wprospect" data-pid="${p.id}"><span class="pos ${p.pos}">${esc(posLabel(p))}</span><div class="grow" style="min-width:0"><div class="nm ell">${esc(p.n)} <span class="note">${W.f}</span></div><div class="sub">${p.age} yrs · ${esc(W.n)} · ${p.age>=16?'eligible':'turns 16 later'}</div><div class="wbar" style="margin-top:4px"><i style="width:${clamp(pc,0,100)}%"></i></div></div><div class="pright"><span class="ovr ${ovrC(p.ovr)}">${p.ovr}</span><span class="pot">↑${p.pot}</span></div></button>`}).join(''):'<div class="note" style="padding:16px">No prospects yet. Build an academy or send your scouts out.</div>'}</div>`;
+  return `<div class="card"><div class="h2">Academy prospects</div><div class="note">Potential is shown on the right. Prospects must be 16 or older to receive an international scholarship.</div><div class="chips" style="margin-top:8px">${chips.map(([k,l])=>`<button class="chip ${pos===k?'on':''}" data-a="wpos" data-v="${k}">${l}</button>`).join('')}<button class="chip ${ui.welig?'on':''}" data-a="weligible">Eligible 16+</button>${acadF!=='ALL'?`<button class="chip on" data-a="wacadFilter" data-v="ALL">${esc(WCOUNTRY(acadF).n)} ×</button>`:''}</div></div>
+  <div class="card flat">${ps.length?ps.map(p=>{const W=WCOUNTRY(p.prospect);const pc=Math.round((p.ovr-25)/(Math.max(1,p.pot-25))*100);return `<button class="prow q-${p.pos}" data-a="wprospect" data-pid="${p.id}"><span class="pos ${p.pos}">${esc(posLabel(p))}</span><div class="grow" style="min-width:0"><div class="nm ell">${esc(p.n)} <span class="note">${W.f}</span></div><div class="sub">${p.age} yrs · ${esc(W.n)} · ${p.age<16?'turns 16 later':schWait(p)?'talks again after MD '+((p.scholCd||0)+1):'eligible'}</div><div class="wbar" style="margin-top:4px"><i style="width:${clamp(pc,0,100)}%"></i></div></div><div class="pright"><span class="ovr ${ovrC(p.ovr)}">${p.ovr}</span><span class="pot">↑${p.pot}</span></div></button>`}).join(''):'<div class="note" style="padding:16px">'+(ui.welig?'No prospects are eligible for a scholarship right now.':'No prospects yet. Build an academy or send your scouts out.')+'</div>'}</div>${wSchHist()}`;
 }
-function vWSchols(){
-  const hist=(S.schols||[]);
-  const ready=allAcademyProspects().filter(p=>p.age>=16&&!schWait(p)).sort((a,b)=>b.pot-a.pot).slice(0,4);
-  return `<div class="card"><div class="h2">International scholarships</div><div class="note">Offer a prospect a place in your youth squad. The fee covers education, relocation and the academy agreement. A rejected offer can be improved after four matchdays.</div></div>
-  <div class="card flat"><div class="lh"><span class="grow">Ready to move</span><span>${ready.length}</span></div>${ready.length?ready.map(p=>`<button class="prow" data-a="wprospect" data-pid="${p.id}"><span class="pos ${p.pos}">${esc(posLabel(p))}</span><div class="grow"><div class="nm">${esc(p.n)}</div><div class="note">${p.age} · ${WCOUNTRY(p.prospect).n} · pot ${p.pot}</div></div><span class="pill g">Offer</span></button>`).join(''):'<div class="note" style="padding:12px">No eligible prospects right now.</div>'}</div>
-  <div class="card flat"><div class="lh"><span class="grow">Offer history</span><span>Season</span></div>${hist.length?hist.slice(0,20).map(h=>`<div class="newsitem"><span class="pill ${h.ok?'g':'r'}">${h.ok?'Signed':'Rejected'}</span><div class="grow"><div><b>${esc(h.n)}</b> <span class="note">${esc(h.country)} · ${money(h.cost)}</span></div><div class="note">Season ${h.s} · MD ${h.w+1} · ${h.chance}% chance</div></div></div>`).join(''):'<div class="note" style="padding:12px">No scholarship offers yet.</div>'}</div>`;
+function wSchHist(){
+  const hist=S.schols||[];
+  return `<details class="card flat wsch"><summary class="lh" style="cursor:pointer"><span class="grow">Scholarship offers</span><span>${hist.length}</span></summary>${hist.length?hist.slice(0,20).map(h=>`<div class="newsitem"><span class="pill ${h.ok?'g':'r'}">${h.ok?'Signed':'Rejected'}</span><div class="grow"><div><b>${esc(h.n)}</b> <span class="note">${esc(h.country)} · ${money(h.cost)}</span></div><div class="note">Season ${h.s} · MD ${h.w+1} · ${h.chance}% chance</div></div></div>`).join(''):'<div class="note" style="padding:12px">No scholarship offers yet.</div>'}</details>`;
+}
+function vWTalent(){
+  const v=ui.wtal==='prospects'?'prospects':'acads';
+  return `${seg([['acads','Academies'],['prospects','Prospects']],v,'wtal')}${v==='acads'?vWAcads():vWProspects()}`;
 }
 function vWRank(){
   const rows=ownerRows(),mine=rows.find(r=>r.you),unlocked=ACHV.filter(a=>S.achv&&S.achv[a.k]!=null).length;
@@ -1159,9 +1160,10 @@ function vWMarket(){
   <div class="card flat">${opps.length?opps.map(m=>{const c=S.clubs[m.idx],seller=ownerById(m.seller),can=S.wallet>=m.price;return `<div class="cc" style="margin-bottom:8px;align-items:flex-start"><div class="grow" style="min-width:0"><div class="row">${crest(c,24)}<b class="disp" style="font-size:17px;text-transform:uppercase">${esc(c.name)}</b></div><div class="note">${esc(DIVN[c.div])} · ${m.pct||100}% stake · ${esc(seller?seller.name:'Private seller')} · expires in ${m.exp} weeks</div><div class="row" style="margin-top:6px;gap:6px;flex-wrap:wrap"><span class="pill">Value ${money(clubValue(c))}</span><span class="pill y">Asking ${money(m.price)}</span></div>${m.msg?`<div class="note gold" style="margin-top:5px">${esc(m.msg)}</div>`:''}</div><div style="display:flex;flex-direction:column;gap:6px;align-items:stretch">${m.nego?'':`<button class="btn sm" data-a="negoclub" data-idx="${m.idx}">Negotiate</button>`}<button class="btn sm ${can?'pri':''}" data-a="buyclub" data-idx="${m.idx}" ${can?'':'disabled'}>${can?'Buy '+(m.pct||100)+'%':'Need '+money(m.price-S.wallet)+' more'}</button></div></div>`}).join(''):'<div class="note" style="padding:14px">No clubs are for sale right now. New opportunities appear as owners sell and as the world moves.</div>'}</div>
   <div class="card"><div class="h2">My clubs</div>${(S.empire||[]).length?S.empire.map(e=>{const c=S.clubs[e.idx];return `<div class="row" style="padding:10px 0;border-bottom:1px solid var(--line)">${crest(c,28)}<div class="grow"><div class="disp" style="font-size:17px;font-weight:700;text-transform:uppercase">${esc(c.name)}</div><div class="note">${e.pct||100}% stake · bought for ${money(e.price)} · value ${money(clubValue(c)*((e.pct||100)/100))} · since S${e.since}</div></div><button class="btn sm dng" data-a="sellclub" data-idx="${c.idx}">Sell</button></div>`}).join(''):'<div class="note">You do not own any clubs outside your main club yet.</div>'}</div>`;
 }
-function vWNews(){
+function sWNews(){return {title:'World news',body:wNewsBody()}}
+function wNewsBody(){
   const types=WNEWS_TYPES,cur=ui.wnType||'All',list=(S.worldNews||[]).filter(n=>cur==='All'||n.type===cur);
-  return `<div class="card"><div class="h2">World news</div><div class="chips" style="margin-top:8px">${types.map(t=>`<button class="chip ${cur===t?'on':''}" data-a="wnType" data-v="${t}">${t}</button>`).join('')}</div></div>
+  return `<div class="card"><div class="chips">${types.map(t=>`<button class="chip ${cur===t?'on':''}" data-a="wnType" data-v="${t}">${t}</button>`).join('')}</div></div>
   <div class="card flat">${list.length?list.map(n=>`<div class="newsitem"><span class="pill ${n.type==='Business'?'b':n.type==='Academies'?'g':n.type==='Shareholders'?'y':n.type==='Rivals'?'r':''}">${esc(n.type||'World')}</span><div class="grow"><div>${esc(n.t)}</div><div class="note">Season ${n.s} · MD ${n.w+1}</div></div></div>`).join(''):'<div class="note" style="padding:14px">No news in this filter yet.</div>'}</div>${(S.eventHist||[]).length?`<div class="card flat"><div class="lh"><span class="grow">Recent decisions</span><span>Choice</span></div>${S.eventHist.slice(0,6).map(h=>`<div class="row" style="padding:9px 12px;border-bottom:1px solid var(--line)"><div class="grow" style="min-width:0"><div class="ell">${esc(h.title)}</div><div class="note">Season ${h.s} · MD ${h.w+1}</div></div><span class="note" style="max-width:45%;text-align:right">${esc(h.choice)}</span></div>`).join('')}</div>`:''}`;
 }
 function sCountry(cid){
@@ -3070,6 +3072,7 @@ function sheetContent(s){
     case'event':return sEvent(s.i);
     case'owner':return sOwner(s.oid);
     case'owners':return sOwners();
+    case'wnews':return sWNews();
     case'shareholders':return sShareholders();
     case'load':{const g=savedGames();return {title:'Load game',body:g.length?`<div class="col">${g.map(({id,m})=>`<div class="card" style="margin:0"><div class="row"><div class="grow"><div class="disp" style="font-size:20px;font-weight:700;text-transform:uppercase">${esc(m.club)}</div><div class="note">Season ${m.season} · ${m.week>=38?'season over':'matchday '+(m.week+1)} · ${ago(m.t)}</div></div><button class="btn pri sm" data-a="loadgo" data-k="slot${id}">Load</button><button class="btn dng sm" data-a="delsave" data-id="${id}" aria-label="Delete save">Delete</button></div></div>`).join('')}</div>`:'<p class="note">No saved games yet.</p>'}}
   }
@@ -3286,12 +3289,15 @@ const H={
  deleteslot(d){const i=d.i,m=metaOf('slot'+i);ask('Delete save',`Delete ${esc(m?m.club:'this save')}? This cannot be undone.`,'Delete',()=>{deleteSave(i);render(true);toast('Save deleted')})},
  exportslot(d){exportSlot(d.i)},
  /* world */
- wsub(d){if(d.v==='prospects')ui.wacad='ALL';ui.wsub=d.v;ui.navOpen=false;render();scrollTo(0,0)},
+ wsub(d){ui.wsub=d.v;ui.navOpen=false;render();scrollTo(0,0)},
+ wtal(d){ui.wtal=d.v;if(d.v==='prospects')ui.wacad='ALL';render()},
+ weligible(){ui.welig=!ui.welig;render()},
+ wnewsopen(){openSheet({kind:'wnews'})},
  wpos(d){ui.wpos=d.v;render()},
  wacadFilter(d){ui.wacad=d.v;render()},
  wcountry(d){openSheet({kind:'country',cid:d.cid})},
  wacadOpen(d){openSheet({kind:'academy',cid:d.cid})},
- wacadProspects(d){ui.wacad=d.cid;ui.wsub='prospects';ui.wpos='ALL';closeSheet();render();scrollTo(0,0)},
+ wacadProspects(d){ui.wacad=d.cid;ui.wsub='talent';ui.wtal='prospects';ui.wpos='ALL';closeSheet();render();scrollTo(0,0)},
  wacadBuild(d){buildAcademy(d.cid)},
  wacadUp(d){upgradeAcademy(d.cid,d.k)},
  wacadScout(d){scoutAcademy(d.cid)},
@@ -3311,7 +3317,7 @@ const H={
  promote(){const s=ui.sheet;if(!s||s.kind!=='player')return;const p=P(s.pid);if(!p||!p.youth)return;p.youth=0;p.yrs=Math.max(p.yrs,2);wnews(`${p.n} is promoted from the youth squad to the first team.`,'Academies');nn(`${p.n} promoted to the first team.`,'s');toast(`${sname(p)} promoted`,'gold');drawSheet();render();touch()},
  loanOut(d){const p=P(+d.pid);if(!p||p.club!==S.me||p.onLoan)return;const me=M(),pool=S.clubs.filter(c=>c.idx!==S.me&&c.sq.length<27);if(!pool.length)return toast('No partner club has room right now.','bad');const to=pick(pool),fee=Math.max(50000,Math.round(p.value*.05/5e4)*5e4);ask('Loan out',`Send ${esc(p.n)} to ${esc(to.name)} until the end of the season? The loan fee is ${money(fee)}.`,'Loan',()=>{p.onLoan={to:to.idx,toName:to.name,until:S.season};me.xi=me.xi.filter(id=>id!==p.id);fixXI(me);me.bal+=fee;me.fin.s.sales+=fee;wnews(`${p.n} joins ${to.name} on loan.`,'Academies');nn(`${p.n} joins ${to.name} on loan until the end of the season.`,'s');toast(`${sname(p)} is out on loan`,'gold');render();touch()})},
  recall(){const s=ui.sheet;if(!s||s.kind!=='player')return;const p=P(s.pid);if(!p||!p.onLoan)return;p.onLoan=null;wnews(`${p.n} is recalled from his loan.`,'Academies');nn(`${p.n} returns early from his loan.`,'s');toast(`${sname(p)} recalled`,'gold');drawSheet();render();touch()},
- wnType(d){ui.wnType=d.v;render()},
+ wnType(d){ui.wnType=d.v;if(ui.sheet&&ui.sheet.kind==='wnews')drawSheet();else render()},
  /* play */
  play(){ui.lsel=null;const nm=nextMatch();if(!nm)return H.seasonsheet();let m;if(nm.mid){m=playMid(S.week);skipIdle()}else m=playWeek();touch();if(m)openLive(m);else{render();if(S.seasonEnd)openSheet({kind:'season'})}},
  advance(){let g=0;while(S.week<S.fix.length&&!nextMatch()&&g++<15)playWeek();touch();render();if(S.seasonEnd&&S.week>=S.fix.length)openSheet({kind:'season'})},
